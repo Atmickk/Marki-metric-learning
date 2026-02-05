@@ -1,6 +1,6 @@
 # Metric Learning for Artist Mark Retrieval
 
-ResNet-50 + triplet loss for trademark retrieval. **Current mAP: 12.5%**
+ResNet-50 + triplet loss for trademark retrieval.
 
 ## Quick Start
 
