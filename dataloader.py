@@ -1,0 +1,98 @@
+import os
+import torch
+from torch.utils.data import DataLoader
+from pytorch_metric_learning.samplers import MPerClassSampler
+from dataset import ArtistImageDataset
+from torchvision import transforms
+from config import TRAIN_CONFIG, DATALOADER_CONFIG
+
+# Configuration from config.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TRAIN_CSV = os.path.join(BASE_DIR, "labels", "final_labels2_train.csv")
+VAL_CSV = os.path.join(BASE_DIR, "labels", "final_labels2_val.csv")
+IMAGE_DIR = os.path.join(BASE_DIR, "Other_Marks")
+
+# Hyperparameters from config
+M = DATALOADER_CONFIG['m_per_class']  # images per class per batch
+BATCH_SIZE = TRAIN_CONFIG['batch_size']  # should be m * n_classes_per_batch
+NUM_WORKERS = DATALOADER_CONFIG['num_workers']
+IMAGE_SIZE = 224
+
+# Simple transform (no augmentation) - for validation
+simple_transform = transforms.Compose([
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Augmented transform for training
+train_transform = transforms.Compose([
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    #transforms.RandomRotation(degrees=15),  # Rotation up to ±15 degrees
+    #transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    transforms.RandomGrayscale(p=0.1),  # 10% chance to convert to grayscale
+    transforms.GaussianBlur(kernel_size=5, sigma=(0.1, 2.0)),  # Gaussian blur
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Train Dataset (with augmentation)
+train_dataset = ArtistImageDataset(TRAIN_CSV, IMAGE_DIR, transform=train_transform)
+train_labels = train_dataset.labels
+
+# Train Sampler
+train_sampler = MPerClassSampler(train_labels, m=M, length_before_new_iter=len(train_dataset))
+
+# Train DataLoader
+train_loader = DataLoader(
+    train_dataset,
+    batch_size=BATCH_SIZE,
+    sampler=train_sampler,
+    num_workers=NUM_WORKERS,
+    pin_memory=DATALOADER_CONFIG['pin_memory'] and torch.cuda.is_available(),
+    drop_last=True
+)
+
+# Validation Dataset (no augmentation)
+val_dataset = ArtistImageDataset(VAL_CSV, IMAGE_DIR, transform=simple_transform)
+val_labels = val_dataset.labels
+
+# Validation Sampler
+val_sampler = MPerClassSampler(val_labels, m=M, length_before_new_iter=len(val_dataset))
+
+# Validation DataLoader
+val_loader = DataLoader(
+    val_dataset,
+    batch_size=BATCH_SIZE,
+    sampler=val_sampler,
+    num_workers=NUM_WORKERS,
+    pin_memory=DATALOADER_CONFIG['pin_memory'] and torch.cuda.is_available(),
+    drop_last=True
+)
+
+# Test Dataset (if available)
+TEST_CSV = os.path.join(BASE_DIR, "metric learning", "labels", "final_labels2_test.csv")
+test_loader = None
+
+if os.path.exists(TEST_CSV):
+    test_dataset = ArtistImageDataset(TEST_CSV, IMAGE_DIR, transform=simple_transform)
+    test_labels = test_dataset.labels
+
+    # For testing, we can use regular sequential loading
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=NUM_WORKERS,
+        pin_memory=DATALOADER_CONFIG['pin_memory'] and torch.cuda.is_available(),
+        drop_last=False
+    )
+    print(f"Train dataset: {len(train_dataset)} images")
+    print(f"Validation dataset: {len(val_dataset)} images")
+    print(f"Test dataset: {len(test_dataset)} images")
+else:
+    print(f"Train dataset: {len(train_dataset)} images")
+    print(f"Validation dataset: {len(val_dataset)} images")
+    print(f"Test dataset: Not found")
+
+print(f"Batch size: {BATCH_SIZE}, Workers: {NUM_WORKERS}")

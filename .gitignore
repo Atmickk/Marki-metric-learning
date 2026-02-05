@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+venv/
+venv312/
+env/
+.venv/
+
+# Model checkpoints (exclude entire directory)
+checkpoints/
+
+# Embeddings (generated files)
+embeddings/*.npz
+
+# FAISS indexes (generated)
+metric_learning_faiss/*.index
+metric_learning_faiss/*.pkl
+
+# Results
+*.json
+evaluate_test_to_all_results.json
+
+# Extra/debug scripts
+extra scripts/
+
+# Images (exclude files, keep directory)
+Other_Marks/*.jpg
+Other_Marks/*.png
+Other_Marks/*.jpeg
+Other_Marks/*.JPG
+Other_Marks/*.PNG
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

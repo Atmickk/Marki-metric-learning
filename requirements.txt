@@ -1,0 +1,12 @@
+# Core Dependencies
+torch>=2.0.0
+torchvision>=0.15.0
+pytorch-metric-learning>=2.0.0
+
+# Data Processing
+pandas>=1.5.0
+numpy>=1.23.0
+Pillow>=9.0.0
+
+# Utilities
+tqdm>=4.65.0
