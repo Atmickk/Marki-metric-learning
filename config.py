@@ -15,25 +15,25 @@ DATA_CONFIG = {
 
 # Model configuration
 MODEL_CONFIG = {
-    'embedding_dim': 512,
+    'embedding_dim': 256,
     'pretrained': True,
-    'dropout': 0.5,
+    'dropout': 0.19842077,
 }
 
 # Training configuration
 TRAIN_CONFIG = {
     'num_epochs': 100,
-    'batch_size': 32,
-    'learning_rate': 5e-5,
-    'weight_decay': 1e-4,
+    'batch_size': 16,
+    'learning_rate': 2.737e-05,
+    'weight_decay': 2.144e-05,
     'patience': 25,
-    'lr_scheduler_patience': 8,
-    'lr_scheduler_factor': 0.7,
+    'lr_scheduler_patience': 10,
+    'lr_scheduler_factor': 0.73509028,
 }
 
 # Loss configuration
 LOSS_CONFIG = {
-    'margin': 0.7,
+    'margin': 0.69968866,
     'triplet_type': 'hard',  # Options: 'hard', 'semihard', 'all'
 }
 

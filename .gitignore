@@ -9,29 +9,35 @@ venv312/
 env/
 .venv/
 
-# Model checkpoints (exclude entire directory)
+# Model checkpoints
 checkpoints/
 
-# Embeddings (generated files)
-embeddings/*.npz
-
-# FAISS indexes (generated)
-metric_learning_faiss/*.index
-metric_learning_faiss/*.pkl
-
-# Results
-*.json
-evaluate_test_to_all_results.json
+# Embeddings
+embeddings/
 
 # Extra/debug scripts
 extra scripts/
 
-# Images (exclude files, keep directory)
-Other_Marks/*.jpg
-Other_Marks/*.png
-Other_Marks/*.jpeg
-Other_Marks/*.JPG
-Other_Marks/*.PNG
+# Images & datasets
+images/
+Manual_Crops/
+Manual_Crops.zip
+Manually_cropped_marks/
+No_Cropping/
+No_Cropping.zip
+Other_Marks/
+Yolo_crops/
+Yolo_crops.zip
+Yolo_normal_test_dataset/
+
+# FAISS indexes
+metric_learning_faiss/
+
+# Random search results
+random_search_results/
+
+# Labels directory (if generated)
+labels/
 
 # IDE
 .vscode/
