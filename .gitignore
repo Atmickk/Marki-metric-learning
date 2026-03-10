@@ -33,8 +33,9 @@ Yolo_normal_test_dataset/
 # FAISS indexes
 metric_learning_faiss/
 
-# Random search results
+# Random search results (ignore all except all_results.json)
 random_search_results/
+!random_search_results/all_results.json
 
 # Labels directory (if generated)
 labels/
