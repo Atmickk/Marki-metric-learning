@@ -15,18 +15,20 @@ from pytorch_metric_learning.miners import BatchHardMiner
 from pytorch_metric_learning.distances import CosineSimilarity
 from tqdm import tqdm
 from dataloader import train_loader, val_loader
-from model import ResNet50_Embedder
+from model import ResNet50_Embedder, DINOv2_Embedder
 from config import MODEL_CONFIG, TRAIN_CONFIG, LOSS_CONFIG
 
 # Configuration from config.py
+backbone = MODEL_CONFIG.get('backbone', 'resnet50')
 CONFIG = {
+    'backbone': backbone,
     'embedding_dim': MODEL_CONFIG['embedding_dim'],
     'learning_rate': TRAIN_CONFIG['learning_rate'],
     'num_epochs': TRAIN_CONFIG['num_epochs'],
     'margin': LOSS_CONFIG['margin'],
     'patience': TRAIN_CONFIG['patience'],
     'save_dir': 'checkpoints',
-    'model_name': 'resnet50_metric_best.pth'
+    'model_name': f'{backbone}_metric_best.pth'
 }
 
 # Device
@@ -39,18 +41,42 @@ if torch.cuda.is_available():
 os.makedirs(CONFIG['save_dir'], exist_ok=True)
 
 # Model
-model = ResNet50_Embedder(embedding_dim=CONFIG['embedding_dim']).to(device)
+if backbone == 'resnet50':
+    model = ResNet50_Embedder(
+        embedding_dim=CONFIG['embedding_dim'],
+        dropout=MODEL_CONFIG.get('dropout', 0.3)
+    ).to(device)
+else:
+    model = DINOv2_Embedder(
+        embedding_dim=CONFIG['embedding_dim'],
+        model_name=backbone,
+        dropout=MODEL_CONFIG.get('dropout', 0.2),
+        freeze_backbone=MODEL_CONFIG.get('freeze_backbone', False)
+    ).to(device)
 
 # Loss and Miner (use cosine similarity for L2-normalized embeddings)
 loss_func = TripletMarginLoss(margin=CONFIG['margin'], distance=CosineSimilarity())
 miner = BatchHardMiner(distance=CosineSimilarity())
 
-# Optimizer and Scheduler
-optimizer = optim.Adam(
-    model.parameters(),
-    lr=CONFIG['learning_rate'],
-    weight_decay=TRAIN_CONFIG['weight_decay']
-)
+# Optimizer with differential learning rates
+if backbone != 'resnet50':
+    # DINOv2: lower LR for pretrained backbone, higher LR for projection head
+    backbone_params = list(model.backbone.parameters())
+    head_params = list(model.embedding.parameters())
+    if hasattr(model, 'dropout') and hasattr(model.dropout, 'parameters'):
+        head_params += list(model.dropout.parameters())
+    backbone_lr = TRAIN_CONFIG.get('backbone_lr', 1e-5)
+    optimizer = optim.AdamW([
+        {'params': backbone_params, 'lr': backbone_lr},
+        {'params': head_params, 'lr': CONFIG['learning_rate']},
+    ], weight_decay=TRAIN_CONFIG['weight_decay'])
+    print(f"Differential LR: backbone={backbone_lr:.1e}, head={CONFIG['learning_rate']:.1e}")
+else:
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=CONFIG['learning_rate'],
+        weight_decay=TRAIN_CONFIG['weight_decay']
+    )
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(
     optimizer,
     mode='min',
@@ -101,7 +127,7 @@ best_val_loss = float('inf')
 patience_counter = 0
 
 print(f"\nStarting training for {CONFIG['num_epochs']} epochs...")
-print(f"Model: ResNet50, Embedding dim: {CONFIG['embedding_dim']}, LR: {CONFIG['learning_rate']}\n")
+print(f"Model: {CONFIG['backbone']}, Embedding dim: {CONFIG['embedding_dim']}, LR: {CONFIG['learning_rate']}\n")
 
 for epoch in range(CONFIG['num_epochs']):
     print(f"\nEpoch {epoch+1}/{CONFIG['num_epochs']}")

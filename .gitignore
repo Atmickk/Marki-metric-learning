@@ -11,12 +11,14 @@ env/
 
 # Model checkpoints
 checkpoints/
+!checkpoints/.gitkeep
 
 # Embeddings
 embeddings/
 
 # Extra/debug scripts
 extra scripts/
+evaluate_test_to_all.py
 
 # Images & datasets
 images/
@@ -25,7 +27,8 @@ Manual_Crops.zip
 Manually_cropped_marks/
 No_Cropping/
 No_Cropping.zip
-Other_Marks/
+Other_Marks/*
+!Other_Marks/.gitkeep
 Yolo_crops/
 Yolo_crops.zip
 Yolo_normal_test_dataset/
@@ -33,12 +36,9 @@ Yolo_normal_test_dataset/
 # FAISS indexes
 metric_learning_faiss/
 
-# Random search results (ignore all except all_results.json)
-random_search_results/
-!random_search_results/all_results.json
+# Random search results (ignore checkpoints, keep summary json)
+random_search_results/*.pth
 
-# Labels directory (if generated)
-labels/
 
 # IDE
 .vscode/

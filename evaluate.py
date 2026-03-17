@@ -6,11 +6,13 @@ import os
 import torch
 import numpy as np
 from tqdm import tqdm
-from model import ResNet50_Embedder
+from model import ResNet50_Embedder, DINOv2_Embedder
 from dataloader import test_loader, val_loader
+from config import MODEL_CONFIG
 
 # Configuration
-CHECKPOINT_PATH = os.path.join('random_search_results', 'resnet50_metric_best.pth')
+backbone = MODEL_CONFIG.get('backbone', 'resnet50')
+CHECKPOINT_PATH = os.path.join('checkpoints', f'{backbone}_metric_best.pth')
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 K_VALUES = [1, 10]  # For Accuracy@K
 
@@ -23,8 +25,16 @@ def load_model(checkpoint_path, device):
     cfg = checkpoint.get('config') or checkpoint.get('params', {})
     embedding_dim = cfg.get('embedding_dim', 512)
 
-    # Initialize model
-    model = ResNet50_Embedder(embedding_dim=embedding_dim)
+    # Initialize model based on checkpoint or config
+    ckpt_backbone = cfg.get('backbone', 'resnet50')
+    if ckpt_backbone == 'resnet50':
+        model = ResNet50_Embedder(embedding_dim=embedding_dim)
+    else:
+        model = DINOv2_Embedder(
+            embedding_dim=embedding_dim,
+            model_name=ckpt_backbone,
+            dropout=0.0  # no dropout at eval
+        )
     model.load_state_dict(checkpoint['model_state_dict'])
     model = model.to(device)
     model.eval()

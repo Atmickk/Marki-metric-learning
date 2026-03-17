@@ -1,15 +1,22 @@
-# Core Dependencies
+# Core ML
 torch>=2.0.0
 torchvision>=0.15.0
 pytorch-metric-learning>=2.0.0
 
-# Data Processing
+# NOTE: For GPU support, install PyTorch with CUDA from https://pytorch.org/get-started/locally/
+# e.g. pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# NOTE: DINOv2 backbone is loaded automatically via torch.hub (no extra install needed)
+# It requires internet access on first run to download weights from facebookresearch/dinov2
+
+# Data processing
 pandas>=1.5.0
 numpy>=1.23.0
 Pillow>=9.0.0
 
 # Augmentation
 albumentations>=1.3.0
+opencv-python-headless>=4.7.0
 
 # Utilities
 tqdm>=4.65.0

@@ -34,7 +34,7 @@ _albu_train = A.Compose([
     #A.Perspective(scale=(0.05, 0.1), p=0.3),
     #A.GridDistortion(num_steps=5, distort_limit=0.2, p=0.2),
     A.RandomBrightnessContrast(brightness_limit=0.25, contrast_limit=0.25, p=0.5),
-    #A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=20, val_shift_limit=15, p=0.4),
+    A.HueSaturationValue(hue_shift_limit=10, sat_shift_limit=20, val_shift_limit=15, p=0.4),
     A.ToGray(p=0.1),
     A.GaussianBlur(blur_limit=(3, 7), p=0.3),
     #A.GaussNoise(std_range=(0.01, 0.05), p=0.3),

@@ -15,25 +15,28 @@ DATA_CONFIG = {
 
 # Model configuration
 MODEL_CONFIG = {
+    'backbone': 'dinov2_vits14',   # 'resnet50' or 'dinov2_vits14'
     'embedding_dim': 256,
     'pretrained': True,
-    'dropout': 0.19842077,
+    'dropout': 0,
+    'freeze_backbone': False,
 }
 
 # Training configuration
 TRAIN_CONFIG = {
     'num_epochs': 100,
     'batch_size': 16,
-    'learning_rate': 2.737e-05,
-    'weight_decay': 2.144e-05,
+    'learning_rate': 1e-3,         # LR for projection head (randomly initialized)
+    'backbone_lr': 1e-5,           # LR for DINOv2 backbone (pretrained)
+    'weight_decay': 1e-4,
     'patience': 25,
     'lr_scheduler_patience': 10,
-    'lr_scheduler_factor': 0.73509028,
+    'lr_scheduler_factor': 0.5,
 }
 
 # Loss configuration
 LOSS_CONFIG = {
-    'margin': 0.69968866,
+    'margin': 0.6,
     'triplet_type': 'hard',  # Options: 'hard', 'semihard', 'all'
 }
 
